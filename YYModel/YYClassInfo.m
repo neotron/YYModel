@@ -132,17 +132,21 @@ YYEncodingType YYEncodingGetType(const char *typeEncoding) {
         _returnTypeEncoding = [NSString stringWithUTF8String:returnType];
         free(returnType);
     }
-    unsigned int argumentCount = method_getNumberOfArguments(method);
-    if (argumentCount > 0) {
-        NSMutableArray *argumentTypes = [NSMutableArray new];
-        for (unsigned int i = 0; i < argumentCount; i++) {
-            char *argumentType = method_copyArgumentType(method, i);
-            NSString *type = argumentType ? [NSString stringWithUTF8String:argumentType] : nil;
-            [argumentTypes addObject:type ? type : @""];
-            if (argumentType) free(argumentType);
+    /// MOD: Swift3 Crash fix
+    if(![_name hasPrefix:@"_swift_"]) {
+        unsigned int argumentCount = method_getNumberOfArguments(method);
+        if(argumentCount > 0) {
+            NSMutableArray   *argumentTypes = [NSMutableArray new];
+            for(unsigned int i              = 0; i < argumentCount; i++) {
+                char     *argumentType = method_copyArgumentType(method, i);
+                NSString *type         = argumentType ? [NSString stringWithUTF8String:argumentType] : nil;
+                [argumentTypes addObject:type ? type : @""];
+                if(argumentType) free(argumentType);
+            }
+            _argumentTypeEncodings          = argumentTypes;
         }
-        _argumentTypeEncodings = argumentTypes;
     }
+    /// END MOD
     return self;
 }
 
